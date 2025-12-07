@@ -1,4 +1,5 @@
 import multer from 'multer';
+import path from "path";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -18,4 +19,4 @@ const fileFilter = (req, file, cb) => {
     else cb(new Error('Hanya file .png, .jpg and .jpeg yang diperbolehkan!'), false);
 };
 
-const upload = multer({ storage: storage, fileFilter  })
+export const upload = multer({ storage: storage, fileFilter  })
