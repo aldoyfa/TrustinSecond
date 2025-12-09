@@ -166,15 +166,20 @@ export const createProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, price, stock, description, inventoryId } = req.body;
-        const image = req.file ? `/uploads/${req.file.filename}` : undefined;
+        const { name, price, stock, description, inventoryId, image: imageUrl } = req.body;
+        let image = req.file ? `/uploads/${req.file.filename}` : undefined;
+        
+        // If no file uploaded but imageUrl provided in body, use it
+        if (!image && imageUrl) {
+            image = imageUrl;
+        }
 
         // Cari produk lama
         const product = await prisma.product.findUnique({where: {id}})
         if (!product) return errorResponse(res, "Product not found", null, 404)
 
-        // Hapus file lama jika ada file baru
-        if(image && product.image){
+        // Hapus file lama jika ada file baru DAN file lama adalah file lokal (bukan URL eksternal)
+        if(image && product.image && !product.image.startsWith('http://') && !product.image.startsWith('https://')){
             const oldImagePath = path.join(
                 process.cwd(), //Ganti __dirname dengan process.cwd()
                 "uploads",
@@ -195,7 +200,7 @@ export const updateProduct = async (req, res) => {
             stock: parseInt(stock),
             description,
         }
-        if (image) updateData.image = image;
+        if (image !== undefined) updateData.image = image;
         if (inventoryId) {
             updateData.inventory = {
                 connect: { id: inventoryId }

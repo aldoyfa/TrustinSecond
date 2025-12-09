@@ -15,6 +15,8 @@ export default function AdminDashboardPage() {
     inventory: { name: '', description: '' },
     invoice: { email: '', name: '', phone: '', items: '', total: '', date: '' },
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [dragActive, setDragActive] = useState(false);
 
 
   useEffect(() => {
@@ -41,6 +43,7 @@ export default function AdminDashboardPage() {
 
   const handleOpen = (type) => {
     setModal({ open: true, type, editingId: null });
+    setImageFile(null);
     setForm((f) => ({
       ...f,
       [type]: type === 'product' 
@@ -99,6 +102,7 @@ export default function AdminDashboardPage() {
 
   const handleClose = () => {
     setModal({ open: false, type: null, editingId: null });
+    setImageFile(null);
   };
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -106,6 +110,44 @@ export default function AdminDashboardPage() {
       ...f,
       [modal.type]: { ...f[modal.type], [name]: value },
     }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      // Clear the URL input when file is selected
+      setForm((f) => ({
+        ...f,
+        product: { ...f.product, image: '' },
+      }));
+    }
+  };
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      setImageFile(file);
+      // Clear the URL input when file is dropped
+      setForm((f) => ({
+        ...f,
+        product: { ...f.product, image: '' },
+      }));
+    }
   };
 
   const authConfig = user
@@ -117,11 +159,27 @@ export default function AdminDashboardPage() {
     try {
       const isEditing = !!modal.editingId;
       if (modal.type === 'product') {
-        const payload = { ...form.product, price: Number(form.product.price), stock: Number(form.product.stock) };
-        if (isEditing) {
-          await axios.put(`/api/products/${modal.editingId}`, payload, authConfig);
+        let payload;
+        let config = { ...authConfig };
+        
+        // Use FormData if file is uploaded, otherwise use JSON
+        if (imageFile) {
+          payload = new FormData();
+          payload.append('name', form.product.name);
+          payload.append('price', Number(form.product.price));
+          payload.append('stock', Number(form.product.stock));
+          payload.append('description', form.product.description);
+          payload.append('inventoryId', form.product.inventoryId);
+          payload.append('image', imageFile);
+          config.headers = { ...config.headers, 'Content-Type': 'multipart/form-data' };
         } else {
-          await axios.post('/api/products', payload, authConfig);
+          payload = { ...form.product, price: Number(form.product.price), stock: Number(form.product.stock) };
+        }
+        
+        if (isEditing) {
+          await axios.put(`/api/products/${modal.editingId}`, payload, config);
+        } else {
+          await axios.post('/api/products', payload, config);
         }
         const pRes = await axios.get('/api/products');
         setProducts(pRes.data?.data ?? []);
@@ -233,8 +291,12 @@ export default function AdminDashboardPage() {
                   <td>{p.stock}</td>
                   <td>{p.inventory?.name}</td>
                   <td>
-                    <button className="btn" onClick={() => handleEdit('product', p)} style={{ marginRight: '0.5rem', padding: '0.25rem 0.5rem' }} title="Edit">✏️</button>
-                    <button className="btn btn-danger" onClick={() => handleDelete('product', p.id)} style={{ padding: '0.25rem 0.5rem' }} title="Delete">🗑️</button>
+                    <button className="btn" onClick={() => handleEdit('product', p)} style={{ marginRight: '0.5rem', padding: '0.25rem 0.5rem' }} title="Edit">
+                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>edit</span>
+                    </button>
+                    <button className="btn btn-danger" onClick={() => handleDelete('product', p.id)} style={{ padding: '0.25rem 0.5rem' }} title="Delete">
+                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>delete</span>
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -265,9 +327,12 @@ export default function AdminDashboardPage() {
                   <td>{inv.name}</td>
                   <td>{inv.description}</td>
                   <td>
-                    <button className="btn" onClick={() => handleEdit('inventory', inv)} style={{ marginRight: '0.5rem', padding: '0.25rem 0.5rem' }} title="Edit">✏️</button>
-                    <button className="btn btn-danger" onClick={() => handleDelete('inventory', inv.id)} style={{ padding: '0.25rem 0.5rem' }} title="Delete">🗑️</button>
-                  </td>
+                    <button className="btn" onClick={() => handleEdit('product', p)} style={{ marginRight: '0.5rem', padding: '0.25rem 0.5rem' }} title="Edit">
+                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>edit</span>
+                    </button>
+                    <button className="btn btn-danger" onClick={() => handleDelete('product', p.id)} style={{ padding: '0.25rem 0.5rem' }} title="Delete">
+                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>delete</span>
+                    </button>                  </td>
                 </tr>
               ))}
             </tbody>
@@ -299,9 +364,12 @@ export default function AdminDashboardPage() {
                   <td>Rp {inv.total?.toLocaleString('id-ID')}</td>
                   <td>{new Date(inv.date).toLocaleString('id-ID')}</td>
                   <td>
-                    <button className="btn" onClick={() => handleEdit('invoice', inv)} style={{ marginRight: '0.5rem', padding: '0.25rem 0.5rem' }} title="Edit">✏️</button>
-                    <button className="btn btn-danger" onClick={() => handleDelete('invoice', inv.id)} style={{ padding: '0.25rem 0.5rem' }} title="Delete">🗑️</button>
-                  </td>
+                    <button className="btn" onClick={() => handleEdit('product', p)} style={{ marginRight: '0.5rem', padding: '0.25rem 0.5rem' }} title="Edit">
+                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>edit</span>
+                    </button>
+                    <button className="btn btn-danger" onClick={() => handleDelete('product', p.id)} style={{ padding: '0.25rem 0.5rem' }} title="Delete">
+                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>delete</span>
+                    </button>                  </td>
                 </tr>
               ))}
             </tbody>
@@ -330,13 +398,45 @@ export default function AdminDashboardPage() {
                   </div>
                   <div>
                     <label className="label">Image</label>
-                    <div style={{ border: '2px dashed #d1d5db', borderRadius: '0.5rem', padding: '2rem', textAlign: 'center', background: '#fafafa', cursor: 'pointer' }}>
-                      <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📤</div>
-                      <p style={{ fontSize: '0.9rem', color: '#6b7280', margin: 0 }}>Click to upload image or drag and drop</p>
-                      <p style={{ fontSize: '0.8rem', color: '#9ca3af', margin: '0.25rem 0 0 0' }}>PNG, JPG, GIF, WebP up to 5MB</p>
-                      <input type="file" name="image" accept="image/*" style={{ display: 'none' }} />
+                    <div 
+                      onDragEnter={handleDrag}
+                      onDragLeave={handleDrag}
+                      onDragOver={handleDrag}
+                      onDrop={handleDrop}
+                      onClick={() => document.getElementById('fileInput').click()}
+                      style={{ 
+                        border: `2px dashed ${dragActive ? '#3b82f6' : '#d1d5db'}`, 
+                        borderRadius: '0.5rem', 
+                        padding: '2rem', 
+                        textAlign: 'center', 
+                        background: dragActive ? '#eff6ff' : '#fafafa', 
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {imageFile ? (
+                        <>
+                          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✓</div>
+                          <p style={{ fontSize: '0.9rem', color: '#10b981', margin: 0, fontWeight: 500 }}>{imageFile.name}</p>
+                          <p style={{ fontSize: '0.8rem', color: '#6b7280', margin: '0.25rem 0 0 0' }}>Click to change file</p>
+                        </>
+                      ) : (
+                        <>
+                          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📤</div>
+                          <p style={{ fontSize: '0.9rem', color: '#6b7280', margin: 0 }}>Click to upload image or drag and drop</p>
+                          <p style={{ fontSize: '0.8rem', color: '#9ca3af', margin: '0.25rem 0 0 0' }}>PNG, JPG, GIF, WebP up to 5MB</p>
+                        </>
+                      )}
+                      <input 
+                        id="fileInput"
+                        type="file" 
+                        name="image" 
+                        accept="image/*" 
+                        onChange={handleFileChange}
+                        style={{ display: 'none' }} 
+                      />
                     </div>
-                    <input className="input" name="image" placeholder="Or enter image URL" value={form.product.image} onChange={handleChange} style={{ marginTop: '0.5rem' }} />
+                    <input className="input" name="image" placeholder="Or enter image URL" value={form.product.image} onChange={handleChange} style={{ marginTop: '0.5rem' }} disabled={!!imageFile} />
                   </div>
                   <div>
                     <label className="label">Price</label>
@@ -406,7 +506,10 @@ export default function AdminDashboardPage() {
 
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
                 <button type="button" className="btn" onClick={handleClose}>Cancel</button>
-                <button type="submit" className="btn btn-primary" style={{ background: '#2563eb', borderColor: '#2563eb' }}>💾 Save</button>
+                <button type="submit" className="btn btn-primary" style={{ background: '#2563eb', borderColor: '#2563eb', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>save</span>
+                  Save
+                </button>
               </div>
             </form>
           </div>

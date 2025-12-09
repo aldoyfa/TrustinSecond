@@ -21,21 +21,37 @@ export default function Layout({ children }) {
             <span>TrustinSecond</span>
           </Link>
           <nav className="nav-links">
-            <NavLink to="/products">Products</NavLink>
-            <NavLink to="/inventory">Inventory</NavLink>
-            <NavLink to="/invoices">Invoices</NavLink>
-            {user && <NavLink to="/admin">Admin</NavLink>}
+            <NavLink to="/products" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>house</span>
+              Products
+            </NavLink>
+            <NavLink to="/inventory" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>package_2</span>
+              Inventory
+            </NavLink>
+            <NavLink to="/invoices" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>receipt_long</span>
+              Invoices
+            </NavLink>
+            <NavLink to="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>person</span>
+              Admin
+            </NavLink>
           </nav>
           <div className="nav-right">
             {user ? (
               <>
                 <span>Halo, {user.email}</span>
-                <button className="btn" onClick={handleLogout}>Logout</button>
+                <button className="btn" onClick={handleLogout}style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>logout</span>
+                  Logout
+                </button>
               </>
             ) : (
               <NavLink to="/auth/signin">Sign In</NavLink>
             )}
-            <button className="btn btn-primary" onClick={() => navigate('/cart')}>
+            <button className="btn btn-primary" onClick={() => navigate('/cart')} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>shopping_cart</span>
               Cart{cartCount > 0 && ` (${cartCount})`}
             </button>
           </div>

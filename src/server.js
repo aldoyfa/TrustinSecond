@@ -21,6 +21,8 @@ app.use(cookierParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors()); // untuk komsumsi API setelah hosting
+// Serve static files from uploads folder
+app.use('/uploads', express.static('uploads'));
 
 // Routes
 app.use('/api/auth', authRoutes);

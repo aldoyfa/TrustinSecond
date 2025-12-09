@@ -2,11 +2,11 @@ import prisma from "../config/prisma.js";
 import { successResponse, errorResponse } from "../utils/response.js";
 
 export const Checkout = async (req,res) => {
-    const { email, name, phone, date } = req.body;
+    const { email, name, phone } = req.body;
 
     //get cart current user logged in
     const carts = await prisma.cart.findMany({
-        where: { userId: req.user.userId },
+        where: { userId: req.user.id },
         include: { product: true }
     })
 
@@ -22,16 +22,28 @@ export const Checkout = async (req,res) => {
           email,
           name,
           phone,
-          date: new Date(date),
+          date: new Date(),
           items,
           total,
           userId: req.user.id
         }
     });
 
+    // Update product stock for each item in cart
+    for (const cart of carts) {
+        await prisma.product.update({
+            where: { id: cart.productId },
+            data: {
+                stock: {
+                    decrement: cart.quantity
+                }
+            }
+        });
+    }
+
     //hapus cart hanya milik user ini
     await prisma.cart.deleteMany({
-        where: { userId: req.user.userId }
+        where: { userId: req.user.id }
     })
 
     return successResponse(res, 'Checkout Successful', invoice);
