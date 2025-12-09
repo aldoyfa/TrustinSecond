@@ -1,6 +1,6 @@
 export const successResponse = (res, message, data = null, status = 200) => {
     return res.status(status).json({
-        succsess : true,
+        success : true,
         message,
         data,
     })
@@ -8,7 +8,7 @@ export const successResponse = (res, message, data = null, status = 200) => {
 
 export const errorResponse = (res, message, data = null, status = 400) => {
     return res.status(status).json({
-        succsess : false,
+        success : false,
         message,
         data,
     })

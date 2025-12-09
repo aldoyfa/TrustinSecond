@@ -1,6 +1,6 @@
-# TrustinSecond React Client
+# TrustinSecond 
 
-This is a React frontend for the TrustinSecond e-commerce backend.
+E-commerce platform to sell and find all your second electronics
 
 ## Tech Stack
 

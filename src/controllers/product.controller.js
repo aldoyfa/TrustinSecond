@@ -3,9 +3,24 @@ import fs from "fs";
 import path from "path";
 import { successResponse, errorResponse } from "../utils/response.js";
 
-// Helper: clean image URL
-const cleanImageUrl = (base, imagePath) =>
-  base.replace(/\/$/, "") + "/" + imagePath.replace(/^\//, "");
+// Helper: clean image URL - only prefix local paths
+const cleanImageUrl = (base, imagePath) => {
+  if (!imagePath) return null;
+  
+  // Fix double-prefixed URLs that are already in database (extract the real URL)
+  const doublePrefix = imagePath.match(/^https?:\/\/[^\/]+\/(https?:\/\/.+)$/);
+  if (doublePrefix) {
+    return doublePrefix[1]; // Return the actual external URL
+  }
+  
+  // If already a full URL (starts with http:// or https://), return as-is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  
+  // Otherwise, it's a local path - add the base URL
+  return base.replace(/\/$/, "") + "/" + imagePath.replace(/^\//, "");
+};
 
 
 // getAllProducts,
@@ -17,7 +32,7 @@ export const getAllProducts = async (req, res) => {
         const base = `${req.protocol}://${req.get("host")}`;
         const productsWithImageUrl = products.map((product) =>({
             ...product,
-            image: product.image? cleanImageUrl(base, product.image) : null,
+            image: cleanImageUrl(base, product.image),
         }))
 
         return successResponse(
@@ -56,7 +71,7 @@ export const getProductByInventoryID = async (req, res) => {
         const base = `${req.protocol}://${req.get("host")}`;
         const productsWithImageUrl = product.map((p) =>({
             ...p,
-            image: p.image? cleanImageUrl(base, p.image) : null,
+            image: cleanImageUrl(base, p.image),
         }))
 
         return successResponse(
@@ -95,7 +110,7 @@ export const getProductById = async (req, res) => {
         const base = `${req.protocol}://${req.get("host")}`;
         const productWithImageUrl = {
             ...product,
-            image: product.image ? `${base}${product.image}` : null,
+            image: cleanImageUrl(base, product.image),
         };
 
         return successResponse(
@@ -116,8 +131,8 @@ export const getProductById = async (req, res) => {
 // createProduct,
 export const createProduct = async (req, res) => {
     try {
-        const { name, price, stock, description, inventoryId } = req.body;
-        const image = req.file ? `/uploads/${req.file.filename}` : null;
+        const { name, price, stock, description, inventoryId, image: imageUrl } = req.body;
+        const image = req.file ? `/uploads/${req.file.filename}` : (imageUrl || null);
 
         const product = await prisma.product.create({
             data: {
@@ -126,14 +141,16 @@ export const createProduct = async (req, res) => {
                 stock: parseInt(stock), //biar "100000" -> 100000
                 description,
                 image,
-                inventoryId,
+                inventory: {
+                    connect: { id: inventoryId }
+                },
             },
         })
 
         const baseUrl = `${req.protocol}://${req.get("host")}`;
         return successResponse(res, "Create Product successful", {
             ...product,
-            image: product.image ? `${baseUrl}${product.image}` : null,
+            image: cleanImageUrl(baseUrl, product.image),
           });
     } catch (error) {
         return errorResponse(
@@ -177,9 +194,13 @@ export const updateProduct = async (req, res) => {
             price: parseFloat(price),
             stock: parseInt(stock),
             description,
-            inventoryId,
         }
         if (image) updateData.image = image;
+        if (inventoryId) {
+            updateData.inventory = {
+                connect: { id: inventoryId }
+            };
+        }
 
         const updatedProduct = await prisma.product.update({
             where: { id },
@@ -191,7 +212,7 @@ export const updateProduct = async (req, res) => {
 
         return successResponse(res, "Update Product successful", {
             ...updatedProduct,
-            image: updatedProduct.image ? `${baseUrl}${updatedProduct.image}` : null,
+            image: cleanImageUrl(baseUrl, updatedProduct.image),
         });
         
     } catch (error) {

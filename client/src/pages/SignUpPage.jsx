@@ -42,48 +42,57 @@ export default function SignUpPage() {
         <form className="form-grid" onSubmit={handleSubmit}>
           <div>
             <label className="label">Full Name</label>
-            <input
-              className="input"
-              name="name"
-              type="text"
-              placeholder="Enter your name"
-              value={form.name}
-              onChange={handleChange}
-              required
-            />
+            <div className="input-group">
+              <span className="input-icon material-symbols-outlined">person</span>
+              <input
+                className="input"
+                name="name"
+                type="text"
+                placeholder="Enter your name"
+                value={form.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
           <div>
             <label className="label">Email Address</label>
-            <input
-              className="input"
-              name="email"
-              type="email"
-              placeholder="Enter your email"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
+            <div className="input-group">
+              <span className="input-icon material-symbols-outlined">email</span>
+              <input
+                className="input"
+                name="email"
+                type="email"
+                placeholder="Enter your email"
+                value={form.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
           <div>
             <label className="label">Password</label>
-            <input
-              className="input"
-              name="password"
-              type="password"
-              placeholder="Create a password"
-              value={form.password}
-              onChange={handleChange}
-              required
-              minLength={6}
-            />
+            <div className="input-group">
+              <span className="input-icon material-symbols-outlined">lock</span>
+              <input
+                className="input"
+                name="password"
+                type="password"
+                placeholder="Create a password"
+                value={form.password}
+                onChange={handleChange}
+                required
+                minLength={6}
+              />
+            </div>
           </div>
-          <button type="submit" className="btn btn-primary" disabled={loading}>
+          <button type="submit" className="btn btn-dark" disabled={loading}>
             {loading ? 'Signing Up…' : 'Sign Up'}
           </button>
           {error && <p className="text-muted">{error}</p>}
         </form>
         <p className="text-muted" style={{ marginTop: '1rem' }}>
-          Already have an account? <Link to="/auth/signin">Sign In</Link>
+          Already have an account? <Link to="/auth/signin" className='link'>Sign In</Link>
         </p>
       </div>
     </div>

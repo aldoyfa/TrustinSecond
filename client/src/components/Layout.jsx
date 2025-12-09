@@ -18,7 +18,7 @@ export default function Layout({ children }) {
         <div className="app-header-inner">
           <Link to="/products" className="brand">
             <span style={{ fontSize: 20 }}>⬡</span>
-            <span>E-Commerce</span>
+            <span>TrustinSecond</span>
           </Link>
           <nav className="nav-links">
             <NavLink to="/products">Products</NavLink>

@@ -4,7 +4,16 @@ export default function ProductCard({ product, onAddToCart }) {
   return (
     <article className="card">
       {product.image && (
-        <img src={product.image} alt={product.name} className="card-image" />
+        <img 
+          src={product.image} 
+          alt={product.name} 
+          className="card-image"
+          referrerPolicy="no-referrer"
+          onError={(e) => {
+            e.target.style.display = 'none';
+            console.error('Failed to load image:', product.image);
+          }}
+        />
       )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
         <div>

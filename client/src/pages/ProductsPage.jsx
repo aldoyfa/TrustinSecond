@@ -26,7 +26,7 @@ export default function ProductsPage() {
   return (
     <div>
       <header className="page-header">
-        <h1 className="page-title">Welcome to E-Commerce</h1>
+        <h1 className="page-title">Welcome to TrustinSecond</h1>
         <p className="page-subtitle">Discover amazing products with our modern e-commerce platform</p>
       </header>
       {loading && <p>Loading products...</p>}

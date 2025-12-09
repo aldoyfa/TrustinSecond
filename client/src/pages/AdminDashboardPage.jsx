@@ -9,10 +9,13 @@ export default function AdminDashboardPage() {
   const [inventories, setInventories] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [error, setError] = useState('');
+  const [modal, setModal] = useState({ open: false, type: null, editingId: null });
+  const [form, setForm] = useState({
+    product: { name: '', price: '', stock: '', inventoryId: '', image: '', description: '' },
+    inventory: { name: '', description: '' },
+    invoice: { email: '', name: '', phone: '', items: '', total: '', date: '' },
+  });
 
-  const authConfig = user
-    ? { headers: { Authorization: `Bearer ${user.token}` }, withCredentials: true }
-    : {};
 
   useEffect(() => {
     const load = async () => {
@@ -21,20 +24,151 @@ export default function AdminDashboardPage() {
           setError('Sign in as admin to access dashboard');
           return;
         }
-        const [pRes, iRes, invRes] = await Promise.all([
+        const [pRes, invRes, iRes] = await Promise.all([
           axios.get('/api/products'),
-          axios.get('/api/invoice', authConfig),
           axios.get('/api/inventory', authConfig),
+          axios.get('/api/invoice', authConfig),
         ]);
         setProducts(pRes.data?.data ?? []);
-        setInvoices(iRes.data?.data ?? []);
         setInventories(invRes.data?.data ?? []);
+        setInvoices(iRes.data?.data ?? []);
       } catch (e) {
         setError('Failed to load admin data');
       }
     };
     load();
   }, [user]);
+
+  const handleOpen = (type) => {
+    setModal({ open: true, type, editingId: null });
+    setForm((f) => ({
+      ...f,
+      [type]: type === 'product' 
+        ? { name: '', price: '', stock: '', inventoryId: '', image: '', description: '' }
+        : type === 'inventory'
+        ? { name: '', description: '' }
+        : { email: '', name: '', phone: '', items: '', total: '', date: '' }
+    }));
+  };
+
+  const handleEdit = (type, item) => {
+    setModal({ open: true, type, editingId: item.id });
+    if (type === 'product') {
+      // Strip localhost prefix from image if present (for clean editing)
+      let cleanImage = item.image || '';
+      if (cleanImage.startsWith('http://localhost:') || cleanImage.startsWith('https://localhost:')) {
+        // Extract just the path or external URL
+        const match = cleanImage.match(/https?:\/\/localhost:\d+(\/.*)/);
+        if (match && match[1].startsWith('/uploads')) {
+          cleanImage = match[1]; // Keep local path
+        } else {
+          // It's a double-prefixed external URL, extract the actual URL
+          const externalMatch = cleanImage.match(/https?:\/\/localhost:\d+\/(https?:\/\/.+)/);
+          if (externalMatch) {
+            cleanImage = externalMatch[1];
+          }
+        }
+      }
+      setForm((f) => ({
+        ...f,
+        product: {
+          name: item.name || '',
+          price: item.price || '',
+          stock: item.stock || '',
+          inventoryId: item.inventoryId || '',
+          image: cleanImage,
+          description: item.description || '',
+        },
+      }));
+    } else if (type === 'inventory') {
+      setForm((f) => ({ ...f, inventory: { name: item.name || '', description: item.description || '' } }));
+    } else if (type === 'invoice') {
+      setForm((f) => ({
+        ...f,
+        invoice: {
+          email: item.email || '',
+          name: item.name || '',
+          phone: item.phone || '',
+          items: item.items || '',
+          total: item.total || '',
+          date: item.date || '',
+        },
+      }));
+    }
+  };
+
+  const handleClose = () => {
+    setModal({ open: false, type: null, editingId: null });
+  };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((f) => ({
+      ...f,
+      [modal.type]: { ...f[modal.type], [name]: value },
+    }));
+  };
+
+  const authConfig = user
+    ? { headers: { Authorization: `Bearer ${user.token}` }, withCredentials: true }
+    : {};
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const isEditing = !!modal.editingId;
+      if (modal.type === 'product') {
+        const payload = { ...form.product, price: Number(form.product.price), stock: Number(form.product.stock) };
+        if (isEditing) {
+          await axios.put(`/api/products/${modal.editingId}`, payload, authConfig);
+        } else {
+          await axios.post('/api/products', payload, authConfig);
+        }
+        const pRes = await axios.get('/api/products');
+        setProducts(pRes.data?.data ?? []);
+      } else if (modal.type === 'inventory') {
+        if (isEditing) {
+          await axios.put(`/api/inventory/${modal.editingId}`, form.inventory, authConfig);
+        } else {
+          await axios.post('/api/inventory', form.inventory, authConfig);
+        }
+        const invRes = await axios.get('/api/inventory', authConfig);
+        setInventories(invRes.data?.data ?? []);
+      } else if (modal.type === 'invoice') {
+        const payload = { ...form.invoice, total: Number(form.invoice.total) };
+        if (isEditing) {
+          await axios.put(`/api/invoice/${modal.editingId}`, payload, authConfig);
+        } else {
+          await axios.post('/api/invoice', payload, authConfig);
+        }
+        const iRes = await axios.get('/api/invoice', authConfig);
+        setInvoices(iRes.data?.data ?? []);
+      }
+      handleClose();
+    } catch (err) {
+      setError(isEditing ? 'Update failed' : 'Creation failed');
+    }
+  };
+
+  const handleDelete = async (type, id) => {
+    if (!confirm('Are you sure you want to delete this item?')) return;
+    try {
+      if (type === 'product') {
+        await axios.delete(`/api/products/${id}`, authConfig);
+        const pRes = await axios.get('/api/products');
+        setProducts(pRes.data?.data ?? []);
+      } else if (type === 'inventory') {
+        await axios.delete(`/api/inventory/${id}`, authConfig);
+        const invRes = await axios.get('/api/inventory', authConfig);
+        setInventories(invRes.data?.data ?? []);
+      } else if (type === 'invoice') {
+        await axios.delete(`/api/invoice/${id}`, authConfig);
+        const iRes = await axios.get('/api/invoice', authConfig);
+        setInvoices(iRes.data?.data ?? []);
+      }
+    } catch (err) {
+      setError('Delete failed');
+    }
+  };
 
   if (!user) {
     return <p className="text-muted">Please sign in to access admin.</p>;
@@ -60,25 +194,48 @@ export default function AdminDashboardPage() {
 
       {tab === 'products' && (
         <section className="section">
-          <h2 className="section-title">Manage Products</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 className="section-title">Manage Products</h2>
+            <button className="btn btn-primary" onClick={() => handleOpen('product')}>+ Add New</button>
+          </div>
           <table className="table">
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Inventory</th>
+                <th>IMAGE</th>
+                <th>NAME</th>
+                <th>PRICE</th>
+                <th>STOCK</th>
+                <th>INVENTORY</th>
+                <th>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
               {products.map((p) => (
                 <tr key={p.id}>
                   <td>{p.id.slice(0, 8)}...</td>
+                  <td>
+                    {p.image ? (
+                      <img 
+                        src={p.image} 
+                        alt={p.name} 
+                        style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: '0.25rem' }} 
+                        onError={(e) => { 
+                          e.target.style.display = 'none'; 
+                          e.target.nextSibling.style.display = 'inline-block'; 
+                        }}
+                      />
+                    ) : null}
+                    <span style={{ display: 'none', fontSize: '0.7rem', color: '#6b7280' }}>🖼️ No image</span>
+                  </td>
                   <td>{p.name}</td>
                   <td>Rp {p.price?.toLocaleString('id-ID')}</td>
                   <td>{p.stock}</td>
                   <td>{p.inventory?.name}</td>
+                  <td>
+                    <button className="btn" onClick={() => handleEdit('product', p)} style={{ marginRight: '0.5rem', padding: '0.25rem 0.5rem' }} title="Edit">✏️</button>
+                    <button className="btn btn-danger" onClick={() => handleDelete('product', p.id)} style={{ padding: '0.25rem 0.5rem' }} title="Delete">🗑️</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -88,13 +245,17 @@ export default function AdminDashboardPage() {
 
       {tab === 'inventory' && (
         <section className="section">
-          <h2 className="section-title">Manage Inventory</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 className="section-title">Manage Inventory</h2>
+            <button className="btn btn-primary" onClick={() => handleOpen('inventory')}>+ Add New</button>
+          </div>
           <table className="table">
             <thead>
               <tr>
                 <th>ID</th>
                 <th>Name</th>
                 <th>Description</th>
+                <th>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
@@ -103,6 +264,10 @@ export default function AdminDashboardPage() {
                   <td>{inv.id.slice(0, 8)}...</td>
                   <td>{inv.name}</td>
                   <td>{inv.description}</td>
+                  <td>
+                    <button className="btn" onClick={() => handleEdit('inventory', inv)} style={{ marginRight: '0.5rem', padding: '0.25rem 0.5rem' }} title="Edit">✏️</button>
+                    <button className="btn btn-danger" onClick={() => handleDelete('inventory', inv.id)} style={{ padding: '0.25rem 0.5rem' }} title="Delete">🗑️</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -112,7 +277,10 @@ export default function AdminDashboardPage() {
 
       {tab === 'invoices' && (
         <section className="section">
-          <h2 className="section-title">Manage Invoices</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 className="section-title">Manage Invoices</h2>
+            <button className="btn btn-primary" onClick={() => handleOpen('invoice')}>+ Add New</button>
+          </div>
           <table className="table">
             <thead>
               <tr>
@@ -120,6 +288,7 @@ export default function AdminDashboardPage() {
                 <th>User ID</th>
                 <th>Total</th>
                 <th>Date</th>
+                <th>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
@@ -129,11 +298,119 @@ export default function AdminDashboardPage() {
                   <td>{inv.userId?.slice ? inv.userId.slice(0, 8) + '...' : inv.userId}</td>
                   <td>Rp {inv.total?.toLocaleString('id-ID')}</td>
                   <td>{new Date(inv.date).toLocaleString('id-ID')}</td>
+                  <td>
+                    <button className="btn" onClick={() => handleEdit('invoice', inv)} style={{ marginRight: '0.5rem', padding: '0.25rem 0.5rem' }} title="Edit">✏️</button>
+                    <button className="btn btn-danger" onClick={() => handleDelete('invoice', inv.id)} style={{ padding: '0.25rem 0.5rem' }} title="Delete">🗑️</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </section>
+      )}
+      {/* Simple modal */}
+      {modal.open && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+          <div className="card" style={{ width: 480, maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 className="section-title" style={{ margin: 0 }}>
+                {modal.editingId 
+                  ? (modal.type === 'product' ? 'Edit Product' : modal.type === 'inventory' ? 'Edit Inventory' : 'Edit Invoice')
+                  : (modal.type === 'product' ? 'Add New Product' : modal.type === 'inventory' ? 'Add Inventory' : 'Add Invoice')
+                }
+              </h3>
+              <button className="btn" onClick={handleClose} style={{ fontSize: '1.25rem', lineHeight: 1, padding: '0.25rem 0.5rem' }}>×</button>
+            </div>
+            <form className="form-grid" onSubmit={handleSubmit}>
+              {modal.type === 'product' && (
+                <>
+                  <div>
+                    <label className="label">Name</label>
+                    <input className="input" name="name" value={form.product.name} onChange={handleChange} required />
+                  </div>
+                  <div>
+                    <label className="label">Image</label>
+                    <div style={{ border: '2px dashed #d1d5db', borderRadius: '0.5rem', padding: '2rem', textAlign: 'center', background: '#fafafa', cursor: 'pointer' }}>
+                      <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📤</div>
+                      <p style={{ fontSize: '0.9rem', color: '#6b7280', margin: 0 }}>Click to upload image or drag and drop</p>
+                      <p style={{ fontSize: '0.8rem', color: '#9ca3af', margin: '0.25rem 0 0 0' }}>PNG, JPG, GIF, WebP up to 5MB</p>
+                      <input type="file" name="image" accept="image/*" style={{ display: 'none' }} />
+                    </div>
+                    <input className="input" name="image" placeholder="Or enter image URL" value={form.product.image} onChange={handleChange} style={{ marginTop: '0.5rem' }} />
+                  </div>
+                  <div>
+                    <label className="label">Price</label>
+                    <input className="input" name="price" type="number" value={form.product.price} onChange={handleChange} required />
+                  </div>
+                  <div>
+                    <label className="label">Description</label>
+                    <textarea className="input" name="description" rows="3" value={form.product.description} onChange={handleChange} required />
+                  </div>
+                  <div>
+                    <label className="label">Stock</label>
+                    <input className="input" name="stock" type="number" value={form.product.stock} onChange={handleChange} required />
+                  </div>
+                  <div>
+                    <label className="label">Inventory</label>
+                    <select className="input" name="inventoryId" value={form.product.inventoryId} onChange={handleChange} required>
+                      <option value="">Select Inventory</option>
+                      {inventories.map((inv) => (
+                        <option key={inv.id} value={inv.id}>{inv.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
+
+              {modal.type === 'inventory' && (
+                <>
+                  <div>
+                    <label className="label">Name</label>
+                    <input className="input" name="name" value={form.inventory.name} onChange={handleChange} required />
+                  </div>
+                  <div>
+                    <label className="label">Description</label>
+                    <textarea className="input" name="description" value={form.inventory.description} onChange={handleChange} />
+                  </div>
+                </>
+              )}
+
+              {modal.type === 'invoice' && (
+                <>
+                  <div>
+                    <label className="label">Email</label>
+                    <input className="input" name="email" type="email" value={form.invoice.email} onChange={handleChange} required />
+                  </div>
+                  <div>
+                    <label className="label">Name</label>
+                    <input className="input" name="name" value={form.invoice.name} onChange={handleChange} required />
+                  </div>
+                  <div>
+                    <label className="label">Phone</label>
+                    <input className="input" name="phone" value={form.invoice.phone} onChange={handleChange} required />
+                  </div>
+                  <div>
+                    <label className="label">Items (JSON)</label>
+                    <textarea className="input" name="items" value={form.invoice.items} onChange={handleChange} required />
+                  </div>
+                  <div>
+                    <label className="label">Total</label>
+                    <input className="input" name="total" type="number" value={form.invoice.total} onChange={handleChange} required />
+                  </div>
+                  <div>
+                    <label className="label">Date</label>
+                    <input className="input" name="date" type="datetime-local" value={form.invoice.date} onChange={handleChange} />
+                  </div>
+                </>
+              )}
+
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                <button type="button" className="btn" onClick={handleClose}>Cancel</button>
+                <button type="submit" className="btn btn-primary" style={{ background: '#2563eb', borderColor: '#2563eb' }}>💾 Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
