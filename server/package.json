@@ -5,7 +5,12 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node src/server.js",
+    "start": "node src/server.js",
+    "client": "cd client && npm run dev",
+    "migrate": "npx prisma migrate dev",
+    "generate": "npx prisma generate",
+    "studio": "npx prisma studio"
   },
   "repository": {
     "type": "git",

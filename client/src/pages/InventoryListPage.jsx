@@ -39,11 +39,19 @@ export default function InventoryListPage() {
         <div className="grid grid-3">
           {items.map((inv) => (
             <article key={inv.id} className="card">
-              <h3 className="card-title">{inv.name}</h3>
+              <div className="inventory-icon">
+                <span className="material-symbols-outlined">
+                  inventory_2
+                </span>
+                <h3 className="card-title inventory-title">{inv.name}</h3>
+              </div>
               <p className="text-muted">{inv.description}</p>
-              <div style={{ marginTop: '0.75rem' }}>
+              <div className="inventory-actions">
                 <Link to={`/inventory/${inv.id}`}>
-                  <button className="btn btn-primary">View Products</button>
+                  <button className="btn btn-primary inventory-view-btn">
+                    <span className="material-symbols-outlined inventory-view-icon">inventory</span>
+                    View Products
+                  </button>
                 </Link>
               </div>
             </article>

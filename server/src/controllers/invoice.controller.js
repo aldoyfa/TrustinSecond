@@ -90,3 +90,46 @@ export const getInvoicebyuseremail = async (req, res) => {
       return errorResponse(res, 'get invoice by email fail', { error: err.message }, 500);
     }
 }
+
+// Update invoice
+export const updateInvoice = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { email, name, phone, items, total, date } = req.body;
+
+      if (!email || !name || !phone || !items || !total) {
+        return errorResponse(res, 'All fields are required', null, 400);
+      }
+
+      const invoice = await prisma.invoice.update({
+        where: { id },
+        data: {
+          email,
+          name,
+          phone,
+          items,
+          total,
+          date: date ? new Date(date) : undefined
+        }
+      });
+
+      return successResponse(res, 'Invoice updated successfully', invoice);
+    } catch (err) {
+      return errorResponse(res, 'Failed to update invoice', { error: err.message }, 500);
+    }
+}
+
+// Delete invoice
+export const deleteInvoice = async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      await prisma.invoice.delete({
+        where: { id }
+      });
+
+      return successResponse(res, 'Invoice deleted successfully', null);
+    } catch (err) {
+      return errorResponse(res, 'Failed to delete invoice', { error: err.message }, 500);
+    }
+}

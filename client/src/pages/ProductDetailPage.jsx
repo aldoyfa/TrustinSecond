@@ -34,165 +34,116 @@ export default function ProductDetailPage() {
   return (
     <div>
       {/* Breadcrumb */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', fontSize: '0.9rem', color: '#6b7280' }}>
+      <div className="breadcrumb">
         <button 
-          className="btn" 
+          className="btn breadcrumb-back" 
           onClick={() => navigate('/products')}
-          style={{ padding: '0.35rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>arrow_back</span>
+          <span className="material-symbols-outlined">arrow_back</span>
           Back to Products
         </button>
         <span>/</span>
-        <Link to="/products" style={{ color: '#6b7280' }}>Products</Link>
+        <Link to="/products">Products</Link>
         <span>/</span>
-        <span style={{ color: '#111827' }}>{product.name}</span>
+        <span className="current">{product.name}</span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '2.5rem', alignItems: 'start' }}>
-        {/* Left Column - Image and Product Details */}
+      <div className="product-detail-grid">
+        {/* Left Column - Image */}
         <div>
           {/* Product Image */}
           {product.image && (
             <img
               src={product.image}
               alt={product.name}
-              style={{ 
-                width: '100%', 
-                height: 'auto',
-                aspectRatio: '1',
-                borderRadius: '0.75rem', 
-                objectFit: 'cover',
-                background: '#f5f5f5',
-                filter: isOutOfStock ? 'grayscale(100%)' : 'none',
-                opacity: isOutOfStock ? 0.7 : 1,
-                marginBottom: '1.5rem'
-              }}
+              className={`product-detail-image ${isOutOfStock ? 'out-of-stock' : ''}`}
               referrerPolicy="no-referrer"
             />
           )}
-
-          {/* Product Details Section */}
-          <div style={{ 
-            background: '#f9fafb', 
-            borderRadius: '0.75rem', 
-            padding: '1.5rem',
-            border: '1px solid #e5e7eb'
-          }}>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem' }}>Product Details</h2>
-            
-            <div style={{ marginBottom: '1.5rem' }}>
-              {/* Specifications */}
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.75rem', color: '#374151' }}>Specifications</h3>
-              <div style={{ fontSize: '0.85rem', lineHeight: '1.8' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '0.5rem' }}>
-                  <span style={{ color: '#6b7280' }}>Product ID:</span>
-                  <span style={{ color: '#111827', fontFamily: 'monospace', fontSize: '0.8rem', wordBreak: 'break-all' }}>{product.id}</span>
-                  
-                  <span style={{ color: '#6b7280' }}>Category:</span>
-                  <span style={{ color: '#111827' }}>{product.inventory?.name || 'N/A'}</span>
-                  
-                  <span style={{ color: '#6b7280' }}>Stock:</span>
-                  <span style={{ color: '#111827' }}>{product.stock} units</span>
-                  
-                  <span style={{ color: '#6b7280' }}>Inventory ID:</span>
-                  <span style={{ color: '#111827', fontFamily: 'monospace', fontSize: '0.8rem', wordBreak: 'break-all' }}>{product.inventoryId || 'N/A'}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Description */}
-            <div>
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.75rem', color: '#374151' }}>Description</h3>
-              <p style={{ fontSize: '0.85rem', lineHeight: '1.7', color: '#6b7280' }}>
-                {product.description}
-              </p>
-            </div>
-          </div>
         </div>
 
         {/* Right Column - Product Info */}
         <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.5rem' }}>{product.name}</h1>
-          <p className="text-muted" style={{ marginBottom: '1rem', fontSize: '0.95rem' }}>{product.description}</p>
+          <h1 className="product-title">{product.name}</h1>
+          <p className="text-muted product-description">{product.description}</p>
           
-          <div style={{ 
-            fontSize: '1.75rem', 
-            fontWeight: 700, 
-            color: '#1d4ed8', 
-            marginBottom: '0.75rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem'
-          }}>
+          <div className="product-price-container">
             Rp {product.price?.toLocaleString('id-ID')}
-            <span 
-              className="badge" 
-              style={{ 
-                backgroundColor: isOutOfStock ? '#ef4444' : '#111827',
-                fontSize: '0.75rem',
-                padding: '0.35rem 0.75rem'
-              }}
-            >
+            <span className={`badge product-stock-badge ${isOutOfStock ? 'out-of-stock' : 'in-stock'}`}>
               {isOutOfStock ? 'Out of Stock' : `${product.stock} in stock`}
             </span>
           </div>
 
           {/* Inventory and Date Info */}
-          <div style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#6b7280' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>inventory_2</span>
+          <div className="product-meta">
+            <div className="product-meta-row">
+              <span className="material-symbols-outlined">inventory_2</span>
               <span>Inventory: {product.inventoryId || 'N/A'}</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>calendar_today</span>
-              <span>Added: Invalid Date</span>
+            <div className="product-meta-row">
+              <span className="material-symbols-outlined">calendar_today</span>
+              <span>Added: {product.createdAt ? new Date(product.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}</span>
             </div>
           </div>
 
           {/* Out of Stock Warning */}
           {isOutOfStock && (
-            <div style={{ 
-              padding: '0.75rem 1rem', 
-              background: '#fef2f2', 
-              border: '1px solid #fecaca', 
-              borderRadius: '0.5rem',
-              marginBottom: '1rem',
-              color: '#991b1b',
-              fontSize: '0.9rem'
-            }}>
+            <div className="product-out-of-stock-warning">
               This product is currently out of stock and cannot be added to cart.
             </div>
           )}
 
           {/* Action Buttons */}
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <div className="product-actions">
             <button 
-              className="btn btn-primary" 
+              className="btn btn-primary product-add-to-cart" 
               onClick={() => addToCart(product)}
               disabled={isOutOfStock}
-              style={{
-                opacity: isOutOfStock ? 0.5 : 1,
-                cursor: isOutOfStock ? 'not-allowed' : 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                padding: '0.7rem 1.5rem',
-                fontSize: '0.95rem',
-                fontWeight: 600
-              }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>shopping_cart</span>
+              <span className="material-symbols-outlined">shopping_cart</span>
               {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
             </button>
             {product.inventoryId && (
               <Link to={`/inventory/${product.inventoryId}`}>
-                <button className="btn" style={{ padding: '0.7rem 1.5rem', fontSize: '0.95rem' }}>
+                <button className="btn product-view-inventory">
                   View Inventory
                 </button>
               </Link>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Product Details Section - Full Width */}
+      <div className="product-detail-specs">
+        <h2 className="product-specs-title">Product Details</h2>
+        
+        <div className="product-specs-section">
+          {/* Specifications */}
+          <h3 className="product-specs-subtitle">Specifications</h3>
+          <div className="product-specs-content">
+            <div className="product-specs-grid">
+              <span className="product-specs-label">Product ID:</span>
+              <span className="product-specs-value monospace">{product.id}</span>
+              
+              <span className="product-specs-label">Category:</span>
+              <span className="product-specs-value">{product.inventory?.name || 'N/A'}</span>
+              
+              <span className="product-specs-label">Stock:</span>
+              <span className="product-specs-value">{product.stock} units</span>
+              
+              <span className="product-specs-label">Inventory ID:</span>
+              <span className="product-specs-value monospace">{product.inventoryId || 'N/A'}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Description */}
+        <div>
+          <h3 className="product-specs-subtitle">Description</h3>
+          <p className="product-specs-description">
+            {product.description}
+          </p>
         </div>
       </div>
     </div>

@@ -32,13 +32,14 @@ export default function SignUpPage() {
   };
 
   return (
-    <div style={{ maxWidth: 480, margin: '3rem auto' }}>
+    <div className="auth-page">
       <div className="page-header">
-        <h1 className="page-title">Create Account</h1>
+        <h1 className="page-title">⬡ TrustinSecond</h1>
         <p className="page-subtitle">Join and start shopping</p>
       </div>
-      <div className="card">
+      <div className="card card-auth">
         <h2 className="section-title">Sign Up</h2>
+        <p className="helper-subtitle">Create your account to start shopping</p>
         <form className="form-grid" onSubmit={handleSubmit}>
           <div>
             <label className="label">Full Name</label>
@@ -86,13 +87,14 @@ export default function SignUpPage() {
               />
             </div>
           </div>
-          <button type="submit" className="btn btn-dark" disabled={loading}>
+          <button type="submit" className="btn btn-dark btn-full" disabled={loading}>
             {loading ? 'Signing Up…' : 'Sign Up'}
           </button>
           {error && <p className="text-muted">{error}</p>}
         </form>
-        <p className="text-muted" style={{ marginTop: '1rem' }}>
-          Already have an account? <Link to="/auth/signin" className='link'>Sign In</Link>
+        <div className="divider" />
+        <p className="text-muted auth-footer">
+          Already have an account? <Link to="/auth/signin" className="link">Sign In</Link>
         </p>
       </div>
     </div>

@@ -17,24 +17,24 @@ export default function Layout({ children }) {
       <header className="app-header">
         <div className="app-header-inner">
           <Link to="/products" className="brand">
-            <span style={{ fontSize: 20 }}>⬡</span>
+            <span className="brand-icon">⬡</span>
             <span>TrustinSecond</span>
           </Link>
           <nav className="nav-links">
-            <NavLink to="/products" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>house</span>
+            <NavLink to="/products">
+              <span className="material-symbols-outlined icon-md">house</span>
               Products
             </NavLink>
-            <NavLink to="/inventory" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>package_2</span>
+            <NavLink to="/inventory">
+              <span className="material-symbols-outlined icon-md">package_2</span>
               Inventory
             </NavLink>
-            <NavLink to="/invoices" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>receipt_long</span>
+            <NavLink to="/invoices">
+              <span className="material-symbols-outlined icon-md">receipt_long</span>
               Invoices
             </NavLink>
-            <NavLink to="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>person</span>
+            <NavLink to="/admin">
+              <span className="material-symbols-outlined icon-md">person</span>
               Admin
             </NavLink>
           </nav>
@@ -42,16 +42,19 @@ export default function Layout({ children }) {
             {user ? (
               <>
                 <span>Halo, {user.email}</span>
-                <button className="btn" onClick={handleLogout}style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>logout</span>
-                  Logout
+                <button className="btn btn-icon" onClick={handleLogout}>
+                  <span className="material-symbols-outlined icon-md">logout</span>
+                  Sign Out
                 </button>
               </>
             ) : (
-              <NavLink to="/auth/signin">Sign In</NavLink>
+              <button className="btn btn-icon" onClick={() => navigate('/auth/signin')}>
+              <span className="material-symbols-outlined icon-md">login</span>
+              Sign In
+              </button>
             )}
-            <button className="btn btn-primary" onClick={() => navigate('/cart')} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>shopping_cart</span>
+            <button className="btn btn-primary btn-icon" onClick={() => navigate('/cart')}>
+              <span className="material-symbols-outlined icon-md">shopping_cart</span>
               Cart{cartCount > 0 && ` (${cartCount})`}
             </button>
           </div>

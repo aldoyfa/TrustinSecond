@@ -234,7 +234,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div>
-      <header className="page-header" style={{ marginBottom: '1rem' }}>
+      <header className="page-header">
         <h1 className="page-title">Admin Dashboard</h1>
       </header>
       {error && <p className="text-muted">{error}</p>}
@@ -252,7 +252,7 @@ export default function AdminDashboardPage() {
 
       {tab === 'products' && (
         <section className="section">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="admin-header">
             <h2 className="section-title">Manage Products</h2>
             <button className="btn btn-primary" onClick={() => handleOpen('product')}>+ Add New</button>
           </div>
@@ -277,26 +277,28 @@ export default function AdminDashboardPage() {
                       <img 
                         src={p.image} 
                         alt={p.name} 
-                        style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: '0.25rem' }} 
+                        className="table-image"
                         onError={(e) => { 
                           e.target.style.display = 'none'; 
                           e.target.nextSibling.style.display = 'inline-block'; 
                         }}
                       />
                     ) : null}
-                    <span style={{ display: 'none', fontSize: '0.7rem', color: '#6b7280' }}>🖼️ No image</span>
+                    <span className="table-no-image">🖼️ No image</span>
                   </td>
                   <td>{p.name}</td>
                   <td>Rp {p.price?.toLocaleString('id-ID')}</td>
                   <td>{p.stock}</td>
                   <td>{p.inventory?.name}</td>
                   <td>
-                    <button className="btn" onClick={() => handleEdit('product', p)} style={{ marginRight: '0.5rem', padding: '0.25rem 0.5rem' }} title="Edit">
-                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>edit</span>
-                    </button>
-                    <button className="btn btn-danger" onClick={() => handleDelete('product', p.id)} style={{ padding: '0.25rem 0.5rem' }} title="Delete">
-                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>delete</span>
-                    </button>
+                    <div className="table-actions">
+                      <button className="btn btn-table" onClick={() => handleEdit('product', p)} title="Edit">
+                        <span className="material-symbols-outlined icon-sm">edit</span>
+                      </button>
+                      <button className="btn btn-danger btn-table" onClick={() => handleDelete('product', p.id)} title="Delete">
+                        <span className="material-symbols-outlined icon-sm">delete</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -307,7 +309,7 @@ export default function AdminDashboardPage() {
 
       {tab === 'inventory' && (
         <section className="section">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="admin-header">
             <h2 className="section-title">Manage Inventory</h2>
             <button className="btn btn-primary" onClick={() => handleOpen('inventory')}>+ Add New</button>
           </div>
@@ -327,12 +329,15 @@ export default function AdminDashboardPage() {
                   <td>{inv.name}</td>
                   <td>{inv.description}</td>
                   <td>
-                    <button className="btn" onClick={() => handleEdit('product', p)} style={{ marginRight: '0.5rem', padding: '0.25rem 0.5rem' }} title="Edit">
-                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>edit</span>
-                    </button>
-                    <button className="btn btn-danger" onClick={() => handleDelete('product', p.id)} style={{ padding: '0.25rem 0.5rem' }} title="Delete">
-                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>delete</span>
-                    </button>                  </td>
+                    <div className="table-actions">
+                      <button className="btn btn-table" onClick={() => handleEdit('inventory', inv)} title="Edit">
+                        <span className="material-symbols-outlined icon-sm">edit</span>
+                      </button>
+                      <button className="btn btn-danger btn-table" onClick={() => handleDelete('inventory', inv.id)} title="Delete">
+                        <span className="material-symbols-outlined icon-sm">delete</span>
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -342,7 +347,7 @@ export default function AdminDashboardPage() {
 
       {tab === 'invoices' && (
         <section className="section">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="admin-header">
             <h2 className="section-title">Manage Invoices</h2>
             <button className="btn btn-primary" onClick={() => handleOpen('invoice')}>+ Add New</button>
           </div>
@@ -364,12 +369,15 @@ export default function AdminDashboardPage() {
                   <td>Rp {inv.total?.toLocaleString('id-ID')}</td>
                   <td>{new Date(inv.date).toLocaleString('id-ID')}</td>
                   <td>
-                    <button className="btn" onClick={() => handleEdit('product', p)} style={{ marginRight: '0.5rem', padding: '0.25rem 0.5rem' }} title="Edit">
-                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>edit</span>
-                    </button>
-                    <button className="btn btn-danger" onClick={() => handleDelete('product', p.id)} style={{ padding: '0.25rem 0.5rem' }} title="Delete">
-                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>delete</span>
-                    </button>                  </td>
+                    <div className="table-actions">
+                      <button className="btn btn-table" onClick={() => handleEdit('invoice', inv)} title="Edit">
+                        <span className="material-symbols-outlined icon-sm">edit</span>
+                      </button>
+                      <button className="btn btn-danger btn-table" onClick={() => handleDelete('invoice', inv.id)} title="Delete">
+                        <span className="material-symbols-outlined icon-sm">delete</span>
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -378,16 +386,16 @@ export default function AdminDashboardPage() {
       )}
       {/* Simple modal */}
       {modal.open && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-          <div className="card" style={{ width: 480, maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3 className="section-title" style={{ margin: 0 }}>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3 className="section-title modal-title">
                 {modal.editingId 
                   ? (modal.type === 'product' ? 'Edit Product' : modal.type === 'inventory' ? 'Edit Inventory' : 'Edit Invoice')
                   : (modal.type === 'product' ? 'Add New Product' : modal.type === 'inventory' ? 'Add Inventory' : 'Add Invoice')
                 }
               </h3>
-              <button className="btn" onClick={handleClose} style={{ fontSize: '1.25rem', lineHeight: 1, padding: '0.25rem 0.5rem' }}>×</button>
+              <button className="btn modal-close" onClick={handleClose}>×</button>
             </div>
             <form className="form-grid" onSubmit={handleSubmit}>
               {modal.type === 'product' && (
@@ -404,27 +412,19 @@ export default function AdminDashboardPage() {
                       onDragOver={handleDrag}
                       onDrop={handleDrop}
                       onClick={() => document.getElementById('fileInput').click()}
-                      style={{ 
-                        border: `2px dashed ${dragActive ? '#3b82f6' : '#d1d5db'}`, 
-                        borderRadius: '0.5rem', 
-                        padding: '2rem', 
-                        textAlign: 'center', 
-                        background: dragActive ? '#eff6ff' : '#fafafa', 
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                      }}
+                      className={`dropzone ${dragActive ? 'active' : ''}`}
                     >
                       {imageFile ? (
                         <>
-                          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✓</div>
-                          <p style={{ fontSize: '0.9rem', color: '#10b981', margin: 0, fontWeight: 500 }}>{imageFile.name}</p>
-                          <p style={{ fontSize: '0.8rem', color: '#6b7280', margin: '0.25rem 0 0 0' }}>Click to change file</p>
+                          <div className="dropzone-icon">✓</div>
+                          <p className="dropzone-text-success">{imageFile.name}</p>
+                          <p className="dropzone-subtext">Click to change file</p>
                         </>
                       ) : (
                         <>
-                          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📤</div>
-                          <p style={{ fontSize: '0.9rem', color: '#6b7280', margin: 0 }}>Click to upload image or drag and drop</p>
-                          <p style={{ fontSize: '0.8rem', color: '#9ca3af', margin: '0.25rem 0 0 0' }}>PNG, JPG, GIF, WebP up to 5MB</p>
+                          <div className="dropzone-icon">📤</div>
+                          <p className="dropzone-text">Click to upload image or drag and drop</p>
+                          <p className="dropzone-subtext">PNG, JPG, GIF, WebP up to 5MB</p>
                         </>
                       )}
                       <input 
@@ -436,7 +436,7 @@ export default function AdminDashboardPage() {
                         style={{ display: 'none' }} 
                       />
                     </div>
-                    <input className="input" name="image" placeholder="Or enter image URL" value={form.product.image} onChange={handleChange} style={{ marginTop: '0.5rem' }} disabled={!!imageFile} />
+                    <input className="input" name="image" placeholder="Or enter image URL" value={form.product.image} onChange={handleChange} disabled={!!imageFile} />
                   </div>
                   <div>
                     <label className="label">Price</label>
@@ -504,10 +504,10 @@ export default function AdminDashboardPage() {
                 </>
               )}
 
-              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+              <div className="modal-footer">
                 <button type="button" className="btn" onClick={handleClose}>Cancel</button>
-                <button type="submit" className="btn btn-primary" style={{ background: '#2563eb', borderColor: '#2563eb', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>save</span>
+                <button type="submit" className="btn btn-primary btn-icon">
+                  <span className="material-symbols-outlined icon-md">save</span>
                   Save
                 </button>
               </div>

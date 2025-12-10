@@ -26,9 +26,9 @@ export default function SignInPage() {
   };
 
   return (
-    <div style={{ maxWidth: 460, margin: '3rem auto' }}>
+    <div className="auth-page">
       <div className="page-header">
-        <h1 className="page-title">TrustinSecond</h1>
+        <h1 className="page-title">⬡ TrustinSecond</h1>
         <p className="page-subtitle">Welcome back to your account</p>
       </div>
       <div className="card card-auth">
@@ -72,14 +72,14 @@ export default function SignInPage() {
             </label>
             <Link to="#" className="link">Forgot password?</Link>
           </div>
-          <button type="submit" className="btn btn-dark">Sign In</button>
+          <button type="submit" className="btn btn-dark btn-full">Sign In</button>
           {error && <p className="text-muted">{error}</p>}
-          <p className="legal">
-            By signing in, you agree to our <Link to="#" className="muted-link">Terms of Service</Link> and <Link to="#" className="muted-link">Privacy Policy</Link>
-          </p>
         </form>
+        <p className="legal">
+          By signing in, you agree to our <Link to="#" className="muted-link">Terms of Service</Link> and <Link to="#" className="muted-link">Privacy Policy</Link>
+        </p>
         <div className="divider" />
-        <p className="text-muted">
+        <p className="text-muted auth-footer">
           Don't have an account? <Link to="/auth/signup" className="link">Create one here</Link>
         </p>
       </div>

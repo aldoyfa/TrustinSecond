@@ -90,51 +90,48 @@ export default function CartPage() {
   };
   
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.5rem' }}>
-      <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <button className="btn" onClick={() => window.history.back()} style={{ padding: '0.5rem' }}>← Kembali Belanja</button>
-        <h1 className="page-title" style={{ textAlign: 'left', margin: 0 }}>Keranjang Belanja</h1>
+    <div className="cart-container">
+      <div className="cart-header">
+        <button className="btn cart-btn-back" onClick={() => window.history.back()}>← Kembali Belanja</button>
+        <h1 className="page-title cart-title">Keranjang Belanja</h1>
       </div>
       {!user && (
         <p className="text-muted">Need to sign in to see cart data</p>
       )}
       {user && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem' }}>
+        <div className="cart-grid">
           <div>
             {items.map((item) => (
-              <div key={item.id} className="card" style={{ marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+              <div key={item.id} className="card cart-item">
                 {item.product?.image && (
                   <img 
                     src={item.product.image} 
                     alt={item.product.name} 
-                    style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: '0.5rem', flexShrink: 0 }} 
+                    className="cart-item-image"
                     referrerPolicy="no-referrer"
                   />
                 )}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{item.product?.name}</h3>
+                <div className="cart-item-details">
+                  <h3 className="cart-item-name">{item.product?.name}</h3>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div className="cart-item-controls">
                   <button 
-                    className="btn" 
+                    className="btn cart-qty-btn" 
                     onClick={() => updateQuantity(item.id, item.quantity, -1)}
-                    style={{ padding: '0.25rem 0.6rem', fontSize: '1rem' }}
                   >−</button>
-                  <span style={{ minWidth: '2rem', textAlign: 'center', fontWeight: 500 }}>{item.quantity}</span>
+                  <span className="cart-item-qty">{item.quantity}</span>
                   <button 
-                    className="btn" 
+                    className="btn cart-qty-btn" 
                     onClick={() => updateQuantity(item.id, item.quantity, 1)}
-                    style={{ padding: '0.25rem 0.6rem', fontSize: '1rem' }}
                   >+</button>
                 </div>
-                <div className="card-price" style={{ fontSize: '1.1rem', fontWeight: 600, minWidth: '120px', textAlign: 'right' }}>Rp {item.total?.toLocaleString('id-ID')}</div>
+                <div className="cart-item-price">Rp {item.total?.toLocaleString('id-ID')}</div>
                 <button 
-                  className="btn btn-danger" 
+                  className="btn btn-danger cart-delete-btn" 
                   onClick={() => deleteItem(item.id)}
-                  style={{ padding: '0.25rem 0.5rem' }}
                   title="Delete"
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>delete</span>
+                  <span className="material-symbols-outlined cart-delete-icon">delete</span>
                 </button>
               </div>
             ))}
@@ -144,7 +141,7 @@ export default function CartPage() {
             <h2 className="section-title">Ringkasan Pesanan</h2>
             <div className="card">
               <p className="text-muted">Total Item: {items.length}</p>
-              <p style={{ fontWeight: '600', marginBottom: '1rem' }}>Total: Rp {total.toLocaleString('id-ID')}</p>
+              <p className="cart-summary-total">Total: Rp {total.toLocaleString('id-ID')}</p>
               <form className="form-grid" onSubmit={handleCheckout}>
                 <div>
                   <label className="label">Name</label>
@@ -158,10 +155,10 @@ export default function CartPage() {
                   <label className="label">Phone</label>
                   <input className="input" name="phone" value={form.phone} onChange={handleChange} required />
                 </div>
-                <button type="submit" className="btn btn-dark" style={{ width: '100%' }}>Checkout Sekarang</button>
-                <button type="button" className="btn" style={{ width: '100%' }} onClick={clearCart}>Kosongkan Keranjang</button>
+                <button type="submit" className="btn btn-dark cart-checkout-btn">Checkout Sekarang</button>
+                <button type="button" className="btn cart-checkout-btn" onClick={clearCart}>Kosongkan Keranjang</button>
               </form>
-              {status && <p className="text-muted" style={{ marginTop: '0.5rem' }}>{status}</p>}
+              {status && <p className="text-muted cart-status">{status}</p>}
             </div>
           </div>
         </div>
