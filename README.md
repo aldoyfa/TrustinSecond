@@ -91,14 +91,14 @@ TrustinSecond is a comprehensive e-commerce platform that allows users to:
 cd server
 node src/server.js
 ```
-The backend server will run on `http://localhost:5000`
+The backend server will run on `http://localhost:15151`
 
 **Start Frontend Development Server** (in a new terminal)
 ```bash
 cd client
 npm run dev
 ```
-The frontend will run on `http://localhost:3000`
+The frontend will run on `http://localhost:15152`
 
 
 ## Project Structure

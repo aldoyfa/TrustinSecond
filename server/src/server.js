@@ -13,7 +13,7 @@ import invoiceRoutes from './routes/invoice.route.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.BACKEND_PORT || 15151;
 
 // Middleware
 app.use(cookierParser());
